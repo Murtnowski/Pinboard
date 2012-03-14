@@ -33,53 +33,59 @@
 (function( $ ){
 	var defaults = {
 		'columngutter'		: '5px',
-		'rowgutter'			: '0px',
+		'rowgutter'			: '2px',
 		'columnwidth'		: '200px'
 	};
 
 	var methods = {
-		init : function( options ) { 
-
-			var pinboards = this.each(function(){ 
+		init : function( options ) {
+			return this.each(function(){ 
 				// Create some defaults, extending them with any options that were provided
 				var $this = $(this),
-					settings = $.extend(defaults, options),
-					numcolumns = parseInt($this.width() / (parseInt(settings.columnwidth) + parseInt(settings.columngutter)));
-				
-				yPositions = new Array();
-					
-				if(numcolumns * (parseInt(settings.columnwidth) + parseInt(settings.columngutter)) + parseInt(settings.columnwidth) <= $this.width())
-				{
-					numcolumns++;
-				}
-				else if(numcolumns == 0)
-				{
-					numcolumns = 1;
-				}
-				
-				for(var i = 0; i < numcolumns; i++)
-				{
-					yPositions[i] = 0;
-				}
+					settings = $.extend(defaults, options);
 				
 				$this.data('pinboard', {
-					'settings'		: settings,
-					'yPositions'	: yPositions,
-					'numcolumns'	: numcolumns
+					'settings'		: settings
 				});
+				
+				$(window).on('resize.pinboard', function() {
+					methods.redraw.apply( $this );
+				});
+				
+				methods.redraw.apply( $this );
+
+				//$this.on('resize', function() {
+				//	methods.draw.apply( $this );
+				//}/);
 			});
-			
-			methods.draw.apply( this );
-			
-			return pinboards;
 		},
-		draw : function( ) {
+		destroy : function () {
+			return this.each(function() {
+				$(window).off('.pinboard');
+			});
+		},
+		redraw : function( ) {
 			return this.each(function(){ 
 				var $this = $(this),
 					data = $this.data('pinboard'),
 					settings = data.settings,
-					yPositions = data.yPositions,
-					numcolumns = data.numcolumns;
+					numcolumns = parseInt($this.width() / (parseInt(settings.columnwidth) + parseInt(settings.columngutter)));
+					
+					yPositions = new Array();
+					
+					if(numcolumns * (parseInt(settings.columnwidth) + parseInt(settings.columngutter)) + parseInt(settings.columnwidth) <= $this.width())
+					{
+						numcolumns++;
+					}
+					else if(numcolumns == 0)
+					{
+						numcolumns = 1;
+					}
+					
+					for(var i = 0; i < numcolumns; i++)
+					{
+						yPositions[i] = 0;
+					}
 					
 				
 				$this.children().each(function(){
@@ -101,8 +107,6 @@
 					
 					yPositions[shortColumn] += $this.height() + parseInt(settings.rowgutter);
 				});
-				
-				var aaa = 0;
 			});
 		}
 	};

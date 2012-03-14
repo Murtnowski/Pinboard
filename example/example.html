@@ -7,22 +7,24 @@
 			$(document).ready(function()
 			{
 				$("#pinboard").pinboard();
+				//setTimeout("$('#pinboard').width('500px');",3000);
+				setTimeout("$('#pinboard').pinboard('destroy');",3000);
 			});
 		</script>
 	</head>
 	<body>
-		<div id="pinboard" style="width: 610px;">
-			<div style="background-color: #00FF00; height: 100px;">Test1</div>
-			<div style="background-color: #00FF00; height: 100px;">Test2</div>
-			<div style="background-color: #00FF00; height: 100px;">Test3</div>
-			<div style="background-color: #00FF00; height: 100px;">Test4</div>
-			<div style="background-color: #00FF00; height: 100px;">Test5</div>
-			<div style="background-color: #00FF00; height: 100px;">Test6</div>
-			<div style="background-color: #00FF00; height: 100px;">Test7</div>
-			<div style="background-color: #00FF00; height: 100px;">Test8</div>
+		<div id="pinboard">
+			<div style="background-color: #00FF00; height: 50px;">Test1</div>
+			<div style="background-color: #00FF00; height: 150px;">Test2</div>
+			<div style="background-color: #00FF00; height: 75px;">Test3</div>
+			<div style="background-color: #00FF00; height: 25px;">Test4</div>
+			<div style="background-color: #00FF00; height: 125px;">Test5</div>
+			<div style="background-color: #00FF00; height: 175px;">Test6</div>
+			<div style="background-color: #00FF00; height: 15px;">Test7</div>
+			<div style="background-color: #00FF00; height: 65px;">Test8</div>
 			<div style="background-color: #00FF00; height: 100px;">Test9</div>
-			<div style="background-color: #00FF00; height: 100px;">Test10</div>
-			<div style="background-color: #00FF00; height: 100px;">Test11</div>
+			<div style="background-color: #00FF00; height: 115px;">Test10</div>
+			<div style="background-color: #00FF00; height: 85px;">Test11</div>
 		</div>
 	</body>
 </html>
