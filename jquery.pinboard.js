@@ -39,13 +39,12 @@
 
 	var methods = {
 		init : function( options ) {
-			return this.each(function(){ 
-				// Create some defaults, extending them with any options that were provided
+			return this.each(function() { 
 				var $this = $(this),
 					settings = $.extend(defaults, options);
 				
 				$this.data('pinboard', {
-					'settings'		: settings
+					'settings' : settings
 				});
 				
 				$(window).on('resize.pinboard', function() {
@@ -53,10 +52,6 @@
 				});
 				
 				methods.redraw.apply( $this );
-
-				//$this.on('resize', function() {
-				//	methods.draw.apply( $this );
-				//}/);
 			});
 		},
 		destroy : function () {
@@ -65,33 +60,31 @@
 			});
 		},
 		redraw : function( ) {
-			return this.each(function(){ 
+			return this.each(function() { 
 				var $this = $(this),
-					data = $this.data('pinboard'),
-					settings = data.settings,
+					settings = $this.data('pinboard').settings,
 					numcolumns = parseInt($this.width() / (parseInt(settings.columnwidth) + parseInt(settings.columngutter)));
 					
-					yPositions = new Array();
+				yPositions = new Array(numcolumns);
 					
-					if(numcolumns * (parseInt(settings.columnwidth) + parseInt(settings.columngutter)) + parseInt(settings.columnwidth) <= $this.width())
-					{
-						numcolumns++;
-					}
-					else if(numcolumns == 0)
-					{
-						numcolumns = 1;
-					}
-					
-					for(var i = 0; i < numcolumns; i++)
-					{
-						yPositions[i] = 0;
-					}
-					
+				if(numcolumns * (parseInt(settings.columnwidth) + parseInt(settings.columngutter)) + parseInt(settings.columnwidth) <= $this.width())
+				{
+					numcolumns++;
+				}
+				else if(numcolumns == 0)
+				{
+					numcolumns = 1;
+				}
 				
-				$this.children().each(function(){
+				for(var i = 0; i < numcolumns; i++)
+				{
+					yPositions[i] = 0;
+				}
+
+				$this.children().each(function() {
 					var $this = $(this),
 						shortColumn = 0;
-					
+
 					for(var i = 0; i < numcolumns; i++)
 					{
 						if(yPositions[shortColumn] > yPositions[i])
@@ -99,12 +92,12 @@
 							shortColumn = i;
 						}
 					}
-					
+
 					$this.css('position', 'absolute');
 					$this.css('left', shortColumn * (parseInt(settings.columnwidth) + parseInt(settings.columngutter)));
 					$this.css('top', yPositions[shortColumn]);
 					$this.css('width', settings.columnwidth);
-					
+
 					yPositions[shortColumn] += $this.height() + parseInt(settings.rowgutter);
 				});
 			});
@@ -112,14 +105,17 @@
 	};
 
 	$.fn.pinboard = function( method ) { 
-		// Method calling logic
-		if ( methods[method] ) {
+		if ( methods[method] )
+		{
 			return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
-		} else if ( typeof method === 'object' || ! method ) {
+		}
+		else if ( typeof method === 'object' || ! method )
+		{
 			return methods.init.apply( this, arguments );
-		} else {
+		} 
+		else
+		{
 			$.error( 'Method ' +  method + ' does not exist on jquery.Pinboard' );
 		}
 	};
-
 })( window.jQuery );
