@@ -34,7 +34,8 @@
 	var defaults = {
 		'columngutter'		: '5px',
 		'rowgutter'			: '2px',
-		'columnwidth'		: '200px'
+		'columnwidth'		: '200px',
+		'onscroll'          : function(){}
 	};
 
 	var methods = {
@@ -42,13 +43,17 @@
 			return this.each(function() { 
 				var $this = $(this),
 					settings = $.extend(defaults, options);
-				
+
 				$this.data('pinboard', {
 					'settings' : settings
 				});
 				
 				$(window).on('resize.pinboard', function() {
 					methods.redraw.apply( $this );
+				});
+				
+				$(window).on('scroll.pinboard', function() {
+					settings.onscroll();
 				});
 				
 				methods.redraw.apply( $this );
