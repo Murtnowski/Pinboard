@@ -31,26 +31,79 @@
  * ============================================================ */
 
 (function( $ ){
+	var defaults = {
+		'columngutter'		: '5px',
+		'rowgutter'			: '0px',
+		'columnwidth'		: '200px'
+	};
 
 	var methods = {
 		init : function( options ) { 
-			
-			return this.each(function(){ 
+
+			var pinboards = this.each(function(){ 
 				// Create some defaults, extending them with any options that were provided
 				var $this = $(this),
-					settings = $.extend( {
-					'gutter'         : '5px',
-					'columnwidth'    : '200px'
-				}, options);
-			
-				var a = $this.width();
-				var b = 0;
-				methods.draw.apply( this );
+					settings = $.extend(defaults, options),
+					numcolumns = parseInt($this.width() / (parseInt(settings.columnwidth) + parseInt(settings.columngutter)));
+				
+				yPositions = new Array();
+					
+				if(numcolumns * (parseInt(settings.columnwidth) + parseInt(settings.columngutter)) + parseInt(settings.columnwidth) <= $this.width())
+				{
+					numcolumns++;
+				}
+				else if(numcolumns == 0)
+				{
+					numcolumns = 1;
+				}
+				
+				for(var i = 0; i < numcolumns; i++)
+				{
+					yPositions[i] = 0;
+				}
+				
+				$this.data('pinboard', {
+					'settings'		: settings,
+					'yPositions'	: yPositions,
+					'numcolumns'	: numcolumns
+				});
 			});
+			
+			methods.draw.apply( this );
+			
+			return pinboards;
 		},
 		draw : function( ) {
-			// IS
-			var c = 1;
+			return this.each(function(){ 
+				var $this = $(this),
+					data = $this.data('pinboard'),
+					settings = data.settings,
+					yPositions = data.yPositions,
+					numcolumns = data.numcolumns;
+					
+				
+				$this.children().each(function(){
+					var $this = $(this),
+						shortColumn = 0;
+					
+					for(var i = 0; i < numcolumns; i++)
+					{
+						if(yPositions[shortColumn] > yPositions[i])
+						{
+							shortColumn = i;
+						}
+					}
+					
+					$this.css('position', 'absolute');
+					$this.css('left', shortColumn * (parseInt(settings.columnwidth) + parseInt(settings.columngutter)));
+					$this.css('top', yPositions[shortColumn]);
+					$this.css('width', settings.columnwidth);
+					
+					yPositions[shortColumn] += $this.height() + parseInt(settings.rowgutter);
+				});
+				
+				var aaa = 0;
+			});
 		}
 	};
 
