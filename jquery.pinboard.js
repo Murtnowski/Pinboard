@@ -33,8 +33,8 @@
 (function( $ ){
 	var defaults = {
 		'columngutter'		: '5px',
-		'rowgutter'			: '2px',
-		'columnwidth'		: '200px',
+		'rowgutter'			: '4px',
+		'columnwidth'		: '315px',
 		'center'			: true,
 		'redraw'			: true,
 		'onwindowscroll'	: undefined,
