@@ -32,10 +32,10 @@
 
 (function( $ ){
 	var defaults = {
-		'columngutter'		: '5px',
-		'rowgutter'			: '4px',
-		'columnwidth'		: '315px',
-		'center'			: true,
+		'columngutter'		: '15px',
+		'rowgutter'			: '7px',
+		'columnwidth'		: '300px',
+		'alignment'			: 'center',
 		'redraw'			: true,
 		'onwindowscroll'	: undefined,
 		'onscroll'          : undefined
@@ -117,15 +117,23 @@
 						}
 					}
 					
-					var centerOffset = 0;
+					var offset = 0;
 					
-					if(settings.center)
+					if(settings.alignment == 'left')
 					{
-						centerOffset = Math.round((boardWidth - (numcolumns * parseInt(settings.columnwidth) + (numcolumns - 1) * parseInt(settings.columngutter))) / 2);
+						offset = 0;
+					}
+					else if(settings.alignment == 'right')
+					{
+						offset = boardWidth - (numcolumns * parseInt(settings.columnwidth) + (numcolumns - 1) * parseInt(settings.columngutter));
+					}
+					else
+					{
+						offset = Math.round((boardWidth - (numcolumns * parseInt(settings.columnwidth) + (numcolumns - 1) * parseInt(settings.columngutter))) / 2);
 					}
 
 					$this.css('position', 'absolute');
-					$this.css('left', shortColumn * (parseInt(settings.columnwidth) + parseInt(settings.columngutter)) + centerOffset);
+					$this.css('left', shortColumn * (parseInt(settings.columnwidth) + parseInt(settings.columngutter)) + offset);
 					$this.css('top', yPositions[shortColumn]);
 					$this.css('width', settings.columnwidth);
 
