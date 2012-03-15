@@ -35,7 +35,10 @@
 		'columngutter'		: '5px',
 		'rowgutter'			: '2px',
 		'columnwidth'		: '200px',
-		'onscroll'          : function(){}
+		'center'			: true,
+		'redraw'			: true,
+		'onwindowscroll'	: undefined,
+		'onscroll'          : undefined
 	};
 
 	var methods = {
@@ -43,17 +46,32 @@
 			return this.each(function() { 
 				var $this = $(this),
 					settings = $.extend(defaults, options);
+					
+				$this.css('position', 'relative');
 
 				$this.data('pinboard', {
 					'settings' : settings
 				});
 				
 				$(window).on('resize.pinboard', function() {
-					methods.redraw.apply( $this );
+					if(settings.redraw)
+					{
+						methods.redraw.apply( $this );
+					}
 				});
 				
 				$(window).on('scroll.pinboard', function() {
-					settings.onscroll();
+					if(settings.onwindowscroll !== undefined)
+					{
+						settings.onwindowscroll( $this );
+					}
+				});
+				
+				$this.on('scroll.pinboard', function() {
+					if(settings.onscroll !== undefined)
+					{
+						settings.onscroll( $this );
+					}
 				});
 				
 				methods.redraw.apply( $this );
@@ -68,11 +86,12 @@
 			return this.each(function() { 
 				var $this = $(this),
 					settings = $this.data('pinboard').settings,
-					numcolumns = parseInt($this.width() / (parseInt(settings.columnwidth) + parseInt(settings.columngutter)));
+					boardWidth = $this.width(),
+					numcolumns = parseInt(boardWidth / (parseInt(settings.columnwidth) + parseInt(settings.columngutter)));
 					
 				yPositions = new Array(numcolumns);
 					
-				if(numcolumns * (parseInt(settings.columnwidth) + parseInt(settings.columngutter)) + parseInt(settings.columnwidth) <= $this.width())
+				if(numcolumns * (parseInt(settings.columnwidth) + parseInt(settings.columngutter)) + parseInt(settings.columnwidth) <= boardWidth)
 				{
 					numcolumns++;
 				}
@@ -97,9 +116,16 @@
 							shortColumn = i;
 						}
 					}
+					
+					var centerOffset = 0;
+					
+					if(settings.center)
+					{
+						centerOffset = Math.round((boardWidth - (numcolumns * parseInt(settings.columnwidth) + (numcolumns - 1) * parseInt(settings.columngutter))) / 2);
+					}
 
 					$this.css('position', 'absolute');
-					$this.css('left', shortColumn * (parseInt(settings.columnwidth) + parseInt(settings.columngutter)));
+					$this.css('left', shortColumn * (parseInt(settings.columnwidth) + parseInt(settings.columngutter)) + centerOffset);
 					$this.css('top', yPositions[shortColumn]);
 					$this.css('width', settings.columnwidth);
 
