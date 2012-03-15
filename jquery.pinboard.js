@@ -38,7 +38,23 @@
 		'alignment'			: 'center',
 		'redraw'			: true,
 		'onwindowscroll'	: undefined,
-		'onscroll'          : undefined
+		'onscroll'          : undefined,
+		'scrolllimit'		: '1080',
+		'source'			: undefined,
+		'scrollaction'		: function(board) {
+								jQuery.ajax({
+									'url' : board.data('pinboard').settings.source,
+									'dataType' : 'html',
+									'type' : 'POST',
+									'data' :  {
+										'length' : board.children().length
+									},
+									'success' : function(data, textStatus, jqXHR) {
+										board.append(decodeURIComponent(data));
+										methods.redraw.apply( board );
+									},
+								});
+							  }
 	};
 
 	var methods = {
@@ -65,12 +81,24 @@
 					{
 						settings.onwindowscroll( $this );
 					}
+					
+					if(settings.source !== undefined && $this.css('overflow-y') != 'scroll' && $('body')[0].scrollHeight - $(window).scrollTop() <= parseInt(settings.scrolllimit))
+					{
+						settings.scrollaction($this);
+					}
+					
+					methods.redraw.apply( $this );
 				});
 				
 				$this.on('scroll.pinboard', function() {
 					if(settings.onscroll !== undefined)
 					{
 						settings.onscroll( $this );
+					}
+
+					if(settings.source !== undefined && $this.css('overflow-y') == 'scroll' && $this[0].scrollHeight - $this.scrollTop() <= parseInt(settings.scrolllimit))
+					{
+						settings.scrollaction($this);
 					}
 				});
 				
@@ -86,7 +114,7 @@
 			return this.each(function() { 
 				var $this = $(this),
 					settings = $this.data('pinboard').settings,
-					boardWidth = $this.width(),
+					boardWidth = $this[0].clientWidth,
 					numcolumns = parseInt(boardWidth / (parseInt(settings.columnwidth) + parseInt(settings.columngutter)));
 					
 				yPositions = new Array(numcolumns);
@@ -139,6 +167,14 @@
 
 					yPositions[shortColumn] += $this.height() + parseInt(settings.rowgutter);
 				});
+			});
+		},
+		scrollaction : function( ) {
+			return this.each(function () {
+				var $this = $(this),
+					settings = $this.data('pinboard').settings;
+				
+				settings.scrollaction($this);
 			});
 		}
 	};

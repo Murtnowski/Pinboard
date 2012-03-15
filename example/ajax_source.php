@@ -1,0 +1,3 @@
+<?php
+	echo "<div style='background-color: #FF0000; height: 150px;'>Ajax1 - Length: " .  $_POST['length'] . "</div><div style='background-color: #FF0000; height: 250px;'>Ajax2</div><div style='background-color: #FF0000; height: 50px;'>Ajax3</div><div style='background-color: #FF0000; height: 350px;'>Ajax4</div><div style='background-color: #FF0000; height: 25px;'>Ajax5</div><div style='background-color: #FF0000; height: 75px;'>Ajax6</div><div style='background-color: #FF0000; height: 100px;'>Ajax7</div><div style='background-color: #FF0000; height: 50px;'>Ajax8</div><div style='background-color: #FF0000; height: 125px;'>Ajax9</div><div style='background-color: #FF0000; height: 75px;'>Ajax10</div>";
+?>
