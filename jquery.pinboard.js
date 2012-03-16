@@ -32,6 +32,7 @@
 
 (function( $ ){
 	var defaults = {
+		'rendermode'		: 'wrapless',
 		'columngutter'		: '15px',
 		'rowgutter'			: '7px',
 		'columnwidth'		: '300px',
@@ -42,12 +43,27 @@
 		'scrolllimit'		: '1080',
 		'source'			: undefined,
 		'scrollaction'		: function(board) {
+								var length = 0;
+								
+								if(board.data('pinboard').settings.rendermode == 'wrap')
+								{
+									board.children('#pinboard-ui-widget-alignment-container').children('.pinboard-ui-widget-column').each(function() {
+										var $this = $(this);
+										
+										length += $this.children().length;
+									});	
+								}
+								else
+								{
+									length = board.children().length
+								}
+								
 								jQuery.ajax({
 									'url' : board.data('pinboard').settings.source,
 									'dataType' : 'html',
 									'type' : 'POST',
 									'data' :  {
-										'length' : board.children().length
+										'length' : length
 									},
 									'success' : function(data, textStatus, jqXHR) {
 										board.append(decodeURIComponent(data));
@@ -63,14 +79,52 @@
 				var $this = $(this),
 					settings = $.extend(defaults, options);
 					
-				$this.css('position', 'relative');
+					
+				if(settings.rendermode == 'wrap')
+				{
+					if(settings.alignment == 'left')
+					{
+						$this.prepend("<div id='pinboard-ui-widget-alignment-container' class='pinboard-ui-widget pinboard-ui-widget-alignment' style='margin-left: 0px; margin-right: auto;'></div>");
+					}
+					else if(settings.alignment == 'right')
+					{
+						$this.prepend("<div id='pinboard-ui-widget-alignment-container' class='pinboard-ui-widget pinboard-ui-widget-alignment' style='margin-left: auto; margin-right: 0px;'></div>");
+					}
+					else
+					{
+						$this.prepend("<div id='pinboard-ui-widget-alignment-container' class='pinboard-ui-widget pinboard-ui-widget-alignment' style='margin-left: auto; margin-right: auto;'></div>");
+					}	
+				}
+				else
+				{
+					$this.css('position', 'relative');
+				}
 
 				$this.data('pinboard', {
 					'settings' : settings
 				});
 				
 				$(window).on('resize.pinboard', function() {
-					if(settings.redraw)
+					if(settings.redraw && settings.rendermode == 'wrap')
+					{
+						var boardWidth = $this[0].clientWidth,
+							numcolumns = parseInt(boardWidth / (parseInt(settings.columnwidth) + parseInt(settings.columngutter)));
+							
+						if(numcolumns * (parseInt(settings.columnwidth) + parseInt(settings.columngutter)) + parseInt(settings.columnwidth) <= boardWidth)
+						{
+							numcolumns++;
+						}
+						else if(numcolumns == 0)
+						{
+							numcolumns = 1;
+						}
+							
+						if(numcolumns != $this.children('#pinboard-ui-widget-alignment-container').children('.pinboard-ui-widget-column').length)
+						{
+							methods.redraw.apply( $this );
+						}
+					}
+					else if(settings.redraw)
 					{
 						methods.redraw.apply( $this );
 					}
@@ -86,8 +140,6 @@
 					{
 						settings.scrollaction($this);
 					}
-					
-					methods.redraw.apply( $this );
 				});
 				
 				$this.on('scroll.pinboard', function() {
@@ -107,6 +159,9 @@
 		},
 		destroy : function () {
 			return this.each(function() {
+				var $this = $(this);
+				
+				$this.off('.pinboard');
 				$(window).off('.pinboard');
 			});
 		},
@@ -132,41 +187,95 @@
 				{
 					yPositions[i] = 0;
 				}
-
-				$this.children().each(function() {
-					var $this = $(this),
-						shortColumn = 0;
-
+				
+				if(settings.rendermode == 'wrap')
+				{
+					$this.children('#pinboard-ui-widget-alignment-container').children('.pinboard-ui-widget-column').each(function() {
+						var $this = $(this);
+						
+						$this.replaceWith($this.html());
+					});
+					
+					var orphanpins = $this.children('*:not(#pinboard-ui-widget-alignment-container)');
+					
+					orphanpins.each(function() {
+						var $this = $(this);
+						
+						$this.parent().children('#pinboard-ui-widget-alignment-container').append($this);
+					});
+					
+					var pins = $this.children('#pinboard-ui-widget-alignment-container').children();
+					
 					for(var i = 0; i < numcolumns; i++)
 					{
-						if(yPositions[shortColumn] > yPositions[i])
+						if(i + 1 < numcolumns)
 						{
-							shortColumn = i;
+							$this.children('#pinboard-ui-widget-alignment-container').append('<div class="pinboard-ui-widget pinboard-ui-widget-column" style="float: left; margin-right: ' + settings.columngutter + '; width: ' + settings.columnwidth + '"></div>');
+						}
+						else
+						{
+							$this.children('#pinboard-ui-widget-alignment-container').append('<div class="pinboard-ui-widget pinboard-ui-widget-column" style="float: left; width: ' + settings.columnwidth + '"></div>');
 						}
 					}
 					
-					var offset = 0;
+					//Sort Pins
 					
-					if(settings.alignment == 'left')
-					{
-						offset = 0;
-					}
-					else if(settings.alignment == 'right')
-					{
-						offset = boardWidth - (numcolumns * parseInt(settings.columnwidth) + (numcolumns - 1) * parseInt(settings.columngutter));
-					}
-					else
-					{
-						offset = Math.round((boardWidth - (numcolumns * parseInt(settings.columnwidth) + (numcolumns - 1) * parseInt(settings.columngutter))) / 2);
-					}
+					pins.each(function() {
+						var $this = $(this),
+							shortColumn = 0;
+							
+						for(var i = 0; i < numcolumns; i++)
+						{
+							if($this.parent().children('.pinboard-ui-widget-column').eq(shortColumn).height() > $this.parent().children('.pinboard-ui-widget-column').eq(i).height())
+							{
+								shortColumn = i;
+							}
+						}
+						
+						$this.css('margin-bottom', settings.rowgutter);
+						$this.parent().children('.pinboard-ui-widget-column').eq(shortColumn).append($this);
+					});
+					
+					$this.children('#pinboard-ui-widget-alignment-container').children('.pinboard-ui-widget-column').children(':last-child').css('margin-bottom','');
+					$this.children('#pinboard-ui-widget-alignment-container').css('width', (numcolumns * parseInt(settings.columnwidth) + (numcolumns - 1) * parseInt(settings.columngutter)) + 'px');
+				}
+				else
+				{
+					$this.children().each(function() {
+						var $this = $(this),
+							shortColumn = 0;
 
-					$this.css('position', 'absolute');
-					$this.css('left', shortColumn * (parseInt(settings.columnwidth) + parseInt(settings.columngutter)) + offset);
-					$this.css('top', yPositions[shortColumn]);
-					$this.css('width', settings.columnwidth);
+						for(var i = 0; i < numcolumns; i++)
+						{
+							if(yPositions[shortColumn] > yPositions[i])
+							{
+								shortColumn = i;
+							}
+						}
+						
+						var offset = 0;
+						
+						if(settings.alignment == 'left')
+						{
+							offset = 0;
+						}
+						else if(settings.alignment == 'right')
+						{
+							offset = boardWidth - (numcolumns * parseInt(settings.columnwidth) + (numcolumns - 1) * parseInt(settings.columngutter));
+						}
+						else
+						{
+							offset = Math.round((boardWidth - (numcolumns * parseInt(settings.columnwidth) + (numcolumns - 1) * parseInt(settings.columngutter))) / 2);
+						}
 
-					yPositions[shortColumn] += $this.height() + parseInt(settings.rowgutter);
-				});
+						$this.css('position', 'absolute');
+						$this.css('left', shortColumn * (parseInt(settings.columnwidth) + parseInt(settings.columngutter)) + offset);
+						$this.css('top', yPositions[shortColumn]);
+						$this.css('width', settings.columnwidth);
+
+						yPositions[shortColumn] += $this.height() + parseInt(settings.rowgutter);
+					});
+				}
 			});
 		},
 		scrollaction : function( ) {
